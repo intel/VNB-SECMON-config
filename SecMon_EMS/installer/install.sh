@@ -1,6 +1,7 @@
 #!/bin/bash
 
 current_dir=`pwd`/..
+cert_path="/etc/apache2/ssl"
 
 function install_dep {
 	cd $current_dir
@@ -27,7 +28,48 @@ function install_dep {
 
 	echo "Creating directories for consul database..."	
     	mkdir -p consul_data
-	echo "Creating directories for consul database...done"	
+	echo "Creating directories for consul database...done"
+
+    	# Change file permissions of log file
+    	sudo chmod 777 SecMonEMS/configagent.log
+
+	# changes for HTTPS communication
+	# installing apache2 and mod wsgi module
+	echo "Installing apache2..."
+	sudo -E apt-get -y install apache2 libapache2-mod-wsgi
+	echo "Installing apache2...done"
+
+	# configuring SSL related configurations
+    	# Change apache2.conf
+    	project_dir=$current_dir/SecMonEMS
+    	sudo cp SecMonEMS/apache_configurations/apache2.conf /etc/apache2/apache2.conf
+    	sudo sed -i -e 's-${PROJECT_ROOT}-'"$project_dir"'-g' /etc/apache2/apache2.conf
+
+    	# move default-ssl to standard path
+    	sudo cp SecMonEMS/apache_configurations/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
+
+    	# change current directory inside default-ssl file
+    	sudo sed -i -e 's-${PROJECT_ROOT}-'"$project_dir"'-g' /etc/apache2/sites-available/default-ssl.conf
+
+    	# change certificate path inside default-ssl file
+    	sudo sed -i -e 's-${CERT_PATH}-'"$cert_path"'-g' /etc/apache2/sites-available/default-ssl.conf
+
+    	# configuring HTTP related confs
+    	sudo cp SecMonEMS/apache_configurations/000-default.conf /etc/apache2/sites-available/000-default.conf
+
+    	# change current directory inside 000-default file
+    	sudo sed -i -e 's-${PROJECT_ROOT}-'"$project_dir"'-g' /etc/apache2/sites-available/000-default.conf
+
+    	# Enable apache wsgi module
+    	sudo a2enmod wsgi
+
+    	# Enable apache SSL module
+    	sudo a2enmod ssl
+
+    	# Enable SSL configurations
+    	sudo a2ensite default-ssl
+
+    	sudo service apache2 restart
 }
 
 
@@ -36,7 +78,6 @@ function run_secmonems {
     	cd $current_dir
     	nohup ./consul agent -server -bootstrap -data-dir consul_data -advertise=127.0.0.1 &
     	cd SecMonEMS/
-    	nohup python ./manage.py runserver 0.0.0.0:9082 &
     	nohup python ./manage.py emsnotify &
     	sleep 2
     	echo "Running SecMon EMS server Services...done"

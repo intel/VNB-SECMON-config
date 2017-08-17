@@ -22,6 +22,41 @@
     `cd <repo_name>/SecMonEMS/`
     `mkdir -p consul_data`
 
+4.  Change log file permissions.
+```
+    sudo chmod 777 SecMonEMS/configagent.log
+```
+
+5.  Install Apache web server and Apache wsgi module.
+```
+    sudo -E apt-get -y install apache2 libapache2-mod-wsgi
+```
+
+6.  Configure SSL related Apache configurations.
+```
+    project_dir=<repo_name>/SecMonEMS
+    sudo cp SecMonEMS/apache_configurations/apache2.conf /etc/apache2/apache2.conf
+    sudo sed -i -e 's-${PROJECT_ROOT}-'"$project_dir"'-g' /etc/apache2/apache2.conf
+    sudo cp SecMonEMS/apache_configurations/default-ssl.conf /etc/apache2/sites-available/default-ssl.conf
+    sudo sed -i -e 's-${PROJECT_ROOT}-'"$project_dir"'-g' /etc/apache2/sites-available/default-ssl.conf
+    sudo sed -i -e 's-${CERT_PATH}-'"$cert_path"'-g' /etc/apache2/sites-available/default-ssl.conf
+```
+
+7. Configure HTTP related configurations for Apache web server.
+```
+    sudo cp SecMonEMS/apache_configurations/000-default.conf /etc/apache2/sites-available/000-default.conf
+    sudo sed -i -e 's-${PROJECT_ROOT}-'"$project_dir"'-g' /etc/apache2/sites-available/000-default.conf
+```
+
+8. Enable Apache web server.
+```
+   sudo a2enmod wsgi
+   sudo a2enmod ssl
+   sudo a2ensite default-ssl
+   sudo service apache2 restart
+```
+
+
 ## Run SecMon EMS Server
 ---------------------
 
@@ -30,10 +65,8 @@
     `nohup ./consul agent -server -bootstrap -data-dir consul_data
     -advertise=127.0.0.1 &`
 
-2.  Start **Django server** on **localhost** port **9082.** And start
-    **EMS Notifier** service in background.
+2.  Start **EMS Notifier** service in background.
     `cd <repo_name>/SecMonEMS/SecMonEMS`
-    `nohup python ./manage.py runserver 0.0.0.0:9082 &`
     `nohup python ./manage.py emsnotify &`
 
 
