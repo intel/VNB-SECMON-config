@@ -1,12 +1,14 @@
 # Config file for logging 
 import logging
 import logging.handlers
-import sys
+import os
 
 class configlogging(object):
 
     def __init__(self):
-        LOG_FILENAME = 'configagent.log'
+        BASE_DIR = os.path.dirname(__file__)
+
+        LOG_FILENAME = os.path.join(BASE_DIR, 'configagent.log')
         default_level = logging.INFO
         default_maxBytes = 1000000
         default_backupCount = 5
