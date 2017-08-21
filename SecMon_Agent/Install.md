@@ -30,6 +30,7 @@ CPU Cores required by Secmon: 2
     `$ mkdir –p <path where to store plugins> (ex: /opt/secmon/plugins).`
     `$ mkdir –p <path where to store configurations> (ex: /opt/secmon/plugins/config).`
     `$ mkdir –p <path where hugepages to create> (ex: /mnt/huge).`
+    `$ mkdir /opt/secmon/certs/`  (path to store certificates).
 
 4.  Set these Environment variables.
     `$ export RTE_SDK=<path to your dpdk installation>.`

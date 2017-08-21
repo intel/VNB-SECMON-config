@@ -54,6 +54,9 @@ function build_secmon {
   export RTE_SDK=/etc/dpdk-2.0.0
   mkdir -p /opt/secmon/plugins/config
 
+  # path to store certificates
+  mkdir /opt/secmon/certs
+
   # compile secmon agent
   echo "Compiling secmon agent..."
   cd $SEC_AGENT
