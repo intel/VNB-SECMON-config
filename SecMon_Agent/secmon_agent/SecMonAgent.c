@@ -855,6 +855,7 @@ void strip_gtp_header(struct rte_mbuf *m)
     char *pkt = (char *)rte_pktmbuf_mtod(m,char *);
     eth_hdr = (struct ether_header *) pkt;
     struct udp_header *udphdr;
+    int gtp_hdr_len = 0; 
 
     etherType = htons(eth_hdr->ether_type);
     if(likely(etherType == VLAN))
@@ -880,16 +881,25 @@ void strip_gtp_header(struct rte_mbuf *m)
                 ipv4_hdr = (struct ipv4_header *) (pkt + MAC_HEADER_LEN);
                 if(likely(ipv4_hdr->next_proto_id == IPPROTO_UDP))
                 {
-                    shift_mac(pkt-VLAN_HEADER_LEN,MAC_VLAN_HDR);
-                    rte_pktmbuf_adj(m,MAC_SHIFT_LEN);
+		    		gtp_hdr_len = get_gtp_hd_len(pkt+IPV4_L4_HDR_OFFSET+ UDP_HDR_LEN);	
+                    shift_mac(pkt-VLAN_HEADER_LEN, MAC_VLAN_HDR, MAC_SHIFT_LEN(gtp_hdr_len));
+                    rte_pktmbuf_adj(m,MAC_SHIFT_LEN(gtp_hdr_len));
                 }
             }
         }
     }
-    else
+    else if(likely(etherType == IPV4_PACKET))
     {
-        /* non vlan tagged packet handling. 
-         * in case of taas ,  this case is most unlikely 
-         */
+        udphdr = (struct udp_header *) (pkt + IPV4_L4_HDR_OFFSET);
+         if((ntohs(udphdr->dst_port)) == PROTO_GTP)
+         {
+            ipv4_hdr = (struct ipv4_header *) (pkt + MAC_HEADER_LEN);
+            if(likely(ipv4_hdr->next_proto_id == IPPROTO_UDP))
+            {
+		   			gtp_hdr_len = get_gtp_hd_len(pkt+IPV4_L4_HDR_OFFSET+ UDP_HDR_LEN);	
+                   	shift_mac(pkt, MAC_HEADER_LEN, MAC_SHIFT_LEN(gtp_hdr_len));
+                   	rte_pktmbuf_adj(m, MAC_SHIFT_LEN(gtp_hdr_len));
+             }
+        }
     }
 }

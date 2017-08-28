@@ -96,10 +96,11 @@
 #define MILLISEC_TO_SEC 			1000
 #define MSG_SIZE 					4096
 #define CONF_KEY 		100
-#define MAC_SHIFT_LEN 	36
+#define MAC_SHIFT_LEN(gtp_hdr) 	28+gtp_hdr //20+8+gtp
 #define MAC_HEADER_LEN 	14
 #define VLAN_HEADER_LEN 4
 #define MAC_VLAN_HDR    MAC_HEADER_LEN+VLAN_HEADER_LEN
+#define UDP_HDR_LEN 	8
 #define IPV4_HDR_LEN 	20
 #define IPV4_L4_HDR_OFFSET MAC_HEADER_LEN + IPV4_HDR_LEN 
 #define VLAN 			0x8100
@@ -207,10 +208,17 @@ static void watch_plugin_directory(void);
 static void handle_file_event(int fd);
 static void load_plugin(const char *path);
 static void send_packets(struct rte_mbuf *m);
-inline void shift_mac(char *,int );
+inline void shift_mac(char *,int, int );
 void strip_gtp_header(struct rte_mbuf *m);
+inline int get_gtp_hd_len(char* gtp_hd );
 
-
+inline int get_gtp_hd_len(char* gtp_hd )
+{
+    if(gtp_hd[0] & 0x7)
+	    return 12; //optional fields present
+    else
+	    return 8; //optional fields not present 
+}
 /** strips gtp header out of the packet.
  * @param 
  *  secmon_pkt pointer to the packet
@@ -220,12 +228,12 @@ void strip_gtp_header(struct rte_mbuf *m);
  *       
  */
 
-inline void shift_mac(char *pkt,int len)
+inline void shift_mac(char *pkt,int len, int shift_len) 
 {
     int i;
     for(i=0;i<len;i++)
     {
-        *(pkt + MAC_SHIFT_LEN) = *(pkt);
+        *(pkt + shift_len) = *(pkt);
         pkt++;
     }
 }
