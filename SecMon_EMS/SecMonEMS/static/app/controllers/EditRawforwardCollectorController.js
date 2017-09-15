@@ -9,7 +9,7 @@ app.controller('EditRawforwardCollectorController', function($scope, $log, $root
     $scope.rawforwardcollector_id = ScopeService.getVal();
     $scope.encapsulationprotocols = [
         { id: "UDP", value: "UDP" },
-/*        { id: "SFLOW", value: "SFLOW" } */
+        { id: "SFLOW", value: "SFLOW" }
     ];
 
     $scope.loadData = function() {
@@ -24,11 +24,9 @@ app.controller('EditRawforwardCollectorController', function($scope, $log, $root
                     if ($scope.available_rawforwardcollectors.encapsulation_protocol == "UDP") {
                         $scope.encapsulation_protocol = { id: "UDP", value: "UDP" }
                     } 
-                    /*
                     else if ($scope.available_rawforwardcollectors.encapsulation_protocol == "SFLOW") {
                         $scope.encapsulation_protocol = { id: "SFLOW", value: "SFLOW" }
                     }
-                    */
                 },
                 function(response) {
                     $scope.show_prog_bar = false;
