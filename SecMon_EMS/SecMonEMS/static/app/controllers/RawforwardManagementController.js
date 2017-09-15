@@ -602,7 +602,7 @@ app.controller('CreateRawforwardCollectorController', function($scope, $log, $ro
     $scope.show_prog_bar = false;
     $scope.encapsulationprotocols = [
         { id: "UDP", value: "UDP" },
-/*        { id: "SFLOW", value: "SFLOW" } */
+        { id: "SFLOW", value: "SFLOW" }
     ];
 
     //$scope.loadData();
